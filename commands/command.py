@@ -5,7 +5,9 @@ Commands describe the input the account can do to the game.
 
 """
 
+from django.conf import settings
 from evennia.commands.command import Command as BaseCommand
+from evennia.utils import create, utils, search, logger
 
 from evennia import default_cmds
 
@@ -50,11 +52,21 @@ class CmdHome(default_cmds.MuxCommand):
         """Implement the command"""
         caller = self.caller
         home = caller.home
-        caller.msg(home)
 
-        if not home or home.name == "Limbo":
+        if not home or home.id == 2:
             # Prompt to create a new home here
-            caller.msg("You have no home!?!?")
+            answer = yield("You don't have a home yet. Let's make one. What is the name of our home?")
+            while not answer.strip:
+                answer = yield("You must provide a name for your new home.")
+
+            new_room = create.create_object(
+                settings.BASE_ROOM_TYPECLASS,
+                answer,
+                report_to=caller
+            )
+
+            caller.home = new_room
+            caller.move_to(new_room)
         elif home == caller.location:
             caller.msg("You are already home!")
         else:
