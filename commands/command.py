@@ -97,6 +97,48 @@ class CmdDescribe(default_cmds.MuxCommand):
             if description:
                 home.db.desc = description
 
+class CmdExplore(default_cmds.MuxCommand):
+    """
+    Explore
+
+    Usage:
+        explore
+
+    Special dig command for regular users
+    """
+
+    key = "explore"
+    locks = "cmd:all()"
+    help_category = "Building"
+    directions = {
+        "n": ("north", "s"),
+        "ne": ("northeast", "sw"),
+        "e": ("east", "w"),
+        "se": ("southeast", "nw"),
+        "s": ("south", "n"),
+        "sw": ("southwest", "ne"),
+        "w": ("west", "e"),
+        "nw": ("northwest", "se"),
+        "u": ("up", "d"),
+        "d": ("down", "u"),
+        "i": ("in", "o"),
+        "o": ("out", "i"),
+    }
+
+    def func(self):
+        if not self.lhs:
+            self.caller.msg("Usage: explore <direction>")
+            return
+
+        explore_direction = self.lhslist[0]
+        #if explore_direction not in directions
+        #figure this out later
+
+        self.caller.msg("You move %s from %s into a new area." % (self.directions[explore_direction][0], self.caller.location))
+
+        new_room_name = yield("What is this place called?")
+
+        self.caller.msg("%s added to map" % new_room_name)
 
 # -------------------------------------------------------------
 #
