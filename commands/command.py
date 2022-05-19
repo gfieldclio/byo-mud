@@ -54,16 +54,19 @@ class CmdHome(default_cmds.MuxCommand):
         home = caller.home
 
         if not home or home.id == 2:
-            # Prompt to create a new home here
-            answer = yield("You don't have a home yet. Let's make one. What is the name of our home?")
-            while not answer.strip:
-                answer = yield("You must provide a name for your new home.")
+            room_name = yield("You don't have a home yet. Let's make one. What is the name of our home?")
+            while not room_name.strip:
+                room_name = yield("You must provide a name for your new home.")
+
+            description = yield("(Optional) How would you describe %s? Add some flavour to your description." % (room_name))
 
             new_room = create.create_object(
                 settings.BASE_ROOM_TYPECLASS,
-                answer,
+                room_name,
                 report_to=caller
             )
+            if description:
+                new_room.db.desc = description
 
             caller.home = new_room
             caller.move_to(new_room)
@@ -72,6 +75,28 @@ class CmdHome(default_cmds.MuxCommand):
         else:
             caller.msg("There's no place like home ...")
             caller.move_to(home)
+
+class CmdDescribe(default_cmds.MuxCommand):
+    """
+    move to your character's home location
+
+    Usage:
+      describe
+
+    Teleports you to your home location.
+    """
+
+    key = "describe"
+
+    def func(self):
+        caller = self.caller
+        home = caller.home
+
+        if caller.location == home and home.id != 2:
+            description = yield("How would you describe %s? Add some flavour to your description." % (home))
+            if description:
+                home.db.desc = description
+
 
 # -------------------------------------------------------------
 #
