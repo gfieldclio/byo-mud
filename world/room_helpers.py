@@ -1,7 +1,7 @@
 from django.conf import settings
 from evennia.utils import create, utils, search, logger
 
-def autodig(caller, room):
+def dig(caller, room):
     if not room["name"]:
         caller.msg("You must supply a new room name.")
         return
@@ -23,5 +23,38 @@ def autodig(caller, room):
         typeclass,
     )
 
-    caller.msg("%s" % (room_string))
+    caller.msg(room_string)
 
+def link(caller, source, target):
+    sourceroom, sourceexit = source
+    targetroom, targetexit = target
+
+    if type(sourceexit) is str:
+        create.create_object(
+            settings.BASE_EXIT_TYPECLASS,
+            sourceexit,
+            sourceroom,
+            destination=targetroom,
+            report_to=caller,
+        )
+    else:
+        sourceexit.destination = targetroom
+
+    if type(targetexit) is str:
+        create.create_object(
+            settings.BASE_EXIT_TYPECLASS,
+            targetexit,
+            targetroom,
+            destination=sourceroom,
+            report_to=caller,
+        )
+    else:
+        targetexit.destination = sourceroom
+
+    link_string = "Created link from %s(%s) to %s(%s)." % (
+        sourceroom,
+        sourceexit,
+        targetroom,
+        targetexit
+    )
+    caller.msg()
