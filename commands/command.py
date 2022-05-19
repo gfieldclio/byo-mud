@@ -7,7 +7,7 @@ Commands describe the input the account can do to the game.
 
 from evennia.commands.command import Command as BaseCommand
 
-# from evennia import default_cmds
+from evennia import default_cmds
 
 
 class Command(BaseCommand):
@@ -33,6 +33,33 @@ class Command(BaseCommand):
 
     pass
 
+
+class CmdHome(default_cmds.MuxCommand):
+    """
+    move to your character's home location
+
+    Usage:
+      home
+
+    Teleports you to your home location.
+    """
+
+    key = "home"
+
+    def func(self):
+        """Implement the command"""
+        caller = self.caller
+        home = caller.home
+        caller.msg(home)
+
+        if not home or home.name == "Limbo":
+            # Prompt to create a new home here
+            caller.msg("You have no home!?!?")
+        elif home == caller.location:
+            caller.msg("You are already home!")
+        else:
+            caller.msg("There's no place like home ...")
+            caller.move_to(home)
 
 # -------------------------------------------------------------
 #
