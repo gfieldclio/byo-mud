@@ -57,4 +57,4 @@ def link(caller, source, target):
         targetroom,
         targetexit
     )
-    caller.msg()
+    caller.msg(link_string)
