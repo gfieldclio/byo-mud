@@ -131,6 +131,13 @@ class CmdExplore(default_cmds.MuxCommand):
             return
 
         explore_direction = self.lhslist[0]
+        if explore_direction not in self.directions:
+            string = "explore can only understand the following directions: %s." % ",".join(
+                sorted(self.directions.keys())
+            )
+            self.caller.msg(string)
+            return
+
         #if explore_direction not in directions
         #figure this out later
 
