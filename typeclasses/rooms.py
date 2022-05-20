@@ -51,3 +51,23 @@ class Room(DefaultRoom):
         if rooms:
             return rooms[0]
         return None
+
+    @classmethod
+    def nearby_rooms(cls, x, y, dist):
+        rooms_map = []
+        for i in range((dist * 2) + 1):
+            rooms_map.append([' · '] * ((dist * 2) + 1))
+        rooms_map[dist][dist] = ' # '
+
+        x_r = list(reversed([str(x - i) for i in range(0, dist + 1)])) + [str(x + i) for i in range(1, dist + 1)]
+        y_r = list(reversed([str(y - i) for i in range(0, dist + 1)])) + [str(y + i) for i in range(1, dist + 1)]
+
+        full_search = cls.objects.filter(db_tags__db_key__in = x_r, db_tags__db_category="coordx").filter(db_tags__db_key__in = y_r, db_tags__db_category="coordy")
+
+        for room in full_search:
+            x_rel = dist + int(room.tags.get(category="coordx")) - x
+            y_rel = dist + int(room.tags.get(category="coordy")) - y
+            if x_rel != dist and y_rel != dist:
+                rooms_map[y_rel][x_rel] = ' ■ '
+
+        return rooms_map

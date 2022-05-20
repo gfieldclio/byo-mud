@@ -171,7 +171,7 @@ class CmdExplore(default_cmds.MuxCommand):
 
     key = "explore"
     locks = "cmd:all()"
-    help_category = "Building"
+    help_category = "Navigation"
     directions = {
         "n": ("north", "s"),
         "ne": ("northeast", "sw"),
@@ -241,6 +241,28 @@ class CmdExplore(default_cmds.MuxCommand):
 
         self.caller.msg("%s added to map" % new_room)
         self.caller.move_to(new_room)
+
+class CmdMap(default_cmds.MuxCommand):
+    """
+    View map
+
+    Usage:
+        map
+
+    Special dig command for regular users
+    """
+
+    key = "map"
+    locks = "cmd:all()"
+    help_category = "Navigation"
+
+    def func(self):
+        caller = self.caller
+
+        map_grid = caller.location.nearby_rooms(caller.location.x, caller.location.y, 3)
+
+        for row in map_grid:
+            caller.msg("".join(row))
 
 # -------------------------------------------------------------
 #
