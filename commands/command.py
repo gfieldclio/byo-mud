@@ -9,6 +9,7 @@ from django.conf import settings
 from evennia.commands.command import Command as BaseCommand
 from evennia.utils import create, utils, search, logger
 from world.room_helpers import create_room
+from typeclasses.items import Item
 
 from evennia import default_cmds
 from evennia.commands.default.building import CmdDig
@@ -36,15 +37,73 @@ class Command(BaseCommand):
 
     pass
 
+class CmdGet(default_cmds.MuxCommand):
+    """
+    Usage:
+      get <obj>
+
+    Picks up an object from your location and puts it in
+    your inventory. Creates the object if it didn't already
+    exist.
+    """
+
+    key = "get"
+    aliases = "grab"
+    locks = "cmd:all()"
+    arg_regex = r"\s|$"
+
+    def func(self):
+        caller = self.caller
+
+        if not self.args:
+            caller.msg("I don't get it")
+            return
+        obj = caller.search(self.args, location=caller.location, quiet=True)
+        if not obj:
+            answer = yield("There is no %s... Yet! Do you want to create it?" % self.args)
+            if answer.strip().lower() in ("yes", "y"):
+                obj = create.create_object(
+                    Item,
+                    self.args,
+                    caller.location,
+                    report_to=caller
+                )
+            else:
+                return
+        if type(obj) == list:
+            obj = obj[0]
+        if caller == obj:
+            caller.msg("You can't get yourself.")
+            return
+        if not obj.access(caller, "get"):
+            if obj.db.get_err_msg:
+                caller.msg(obj.db.get_err_msg)
+            else:
+                caller.msg("You can't get that.")
+            return
+
+        # calling at_before_get hook method
+        if not obj.at_before_get(caller):
+            return
+
+        success = obj.move_to(caller, quiet=True)
+        if not success:
+            caller.msg("This can't be picked up.")
+        else:
+            caller.msg("You pick up %s." % obj.name)
+            caller.location.msg_contents(
+                "%s picks up %s." % (caller.name, obj.name), exclude=caller
+            )
+            # calling at_get hook method
+            obj.at_get(caller)
 
 class CmdHome(default_cmds.MuxCommand):
     """
-    move to your character's home location
-
     Usage:
       home
 
-    Teleports you to your home location.
+    Teleports you to your home location. If you don't have
+    a home location yet, then this will first create one.
     """
 
     key = "home"
@@ -73,18 +132,41 @@ class CmdHome(default_cmds.MuxCommand):
 
 class CmdDescribe(default_cmds.MuxCommand):
     """
-    move to your character's home location
-
     Usage:
       describe
+      describe <obj>
 
-    Teleports you to your home location.
+    Updates the description for a location or object. You
+    are only allowed to update descriptions for things you create.
     """
 
     key = "describe"
+    locks = "cmd:all()"
+    arg_regex = r"\s|$"
 
     def func(self):
         caller = self.caller
+
+        if not self.args:
+            obj = caller.location
+        else:
+            obj = caller.search(self.args, location=caller.location, quiet=True)
+            if not obj:
+                obj = caller.search(self.args, location=caller, quiet=True)
+
+        if type(obj) == list:
+            obj = obj[0]
+
+        if not obj.access(caller, "describe"):
+            if obj.db.get_err_msg:
+                caller.msg(obj.db.get_err_msg)
+            else:
+                caller.msg("You can't describe that.")
+            return
+
+        caller.msg(obj)
+        return
+
         home = caller.home
 
         if caller.location == home and home.id != 2:
