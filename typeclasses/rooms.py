@@ -19,4 +19,35 @@ class Room(DefaultRoom):
     properties and methods available on all Objects.
     """
 
-    pass
+    @property
+    def x(self):
+        x = self.tags.get(category="coordx")
+        return int(x) if isinstance(x, str) else None
+
+    @x.setter
+    def x(self, x):
+        old = self.tags.get(category="coordx")
+        if old is not None:
+            self.tags.remove(old, category="coordx")
+        if x is not None:
+            self.tags.add(str(x), category="coordx")
+
+    @property
+    def y(self):
+        y = self.tags.get(category="coordy")
+        return int(y) if isinstance(y, str) else None
+
+    @y.setter
+    def y(self, y):
+        old = self.tags.get(category="coordy")
+        if old is not None:
+            self.tags.remove(old, category="coordy")
+        if y is not None:
+            self.tags.add(str(y), category="coordy")
+
+    @classmethod
+    def room_at_coords(cls, x, y):
+        rooms = cls.objects.filter(db_tags__db_key=str(x), db_tags__db_category="coordx").filter(db_tags__db_key=str(y), db_tags__db_category="coordy")
+        if rooms:
+            return rooms[0]
+        return None
