@@ -68,6 +68,7 @@ class CmdGet(default_cmds.MuxCommand):
                     caller.location,
                     report_to=caller
                 )
+                obj.db.desc = ""
             else:
                 return
         if type(obj) == list:
@@ -137,7 +138,8 @@ class CmdDescribe(default_cmds.MuxCommand):
       describe <obj>
 
     Updates the description for a location or object. You
-    are only allowed to update descriptions for things you create.
+    are only allowed to set a description if there isn't
+    one yet.
     """
 
     key = "describe"
@@ -161,18 +163,15 @@ class CmdDescribe(default_cmds.MuxCommand):
             if obj.db.get_err_msg:
                 caller.msg(obj.db.get_err_msg)
             else:
-                caller.msg("You can't describe that.")
+                caller.msg("%s has already been described." % obj)
             return
 
-        caller.msg(obj)
-        return
+        if obj.id == 2 and not obj.access(caller, "edit"):
+            caller.msg("Limbo is beyond description to you.")
 
-        home = caller.home
-
-        if caller.location == home and home.id != 2:
-            description = yield("How would you describe %s? Add some flavour to your description." % (home))
-            if description:
-                home.db.desc = description
+        description = yield("How would you describe %s? Add some flavour to your description. Once the description is set, it's permanent." % (obj))
+        if description:
+            obj.db.desc = description
 
 class CmdExplore(default_cmds.MuxCommand):
     """
