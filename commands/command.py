@@ -98,38 +98,24 @@ class CmdGet(default_cmds.MuxCommand):
             # calling at_get hook method
             obj.at_get(caller)
 
-class CmdHome(default_cmds.MuxCommand):
+class CmdSetHome(default_cmds.MuxCommand):
     """
     Usage:
-      home
+      sethome
 
-    Teleports you to your home location. If you don't have
-    a home location yet, then this will first create one.
+    Sets a given location as your new home.
     """
 
-    key = "home"
+    key = "sethome"
 
     def func(self):
         """Implement the command"""
         caller = self.caller
-        home = caller.home
-
-        if not home or home.id == 2:
-            room_name = yield("You don't have a home yet. Let's make one. What is the name of your new home?")
-            while not room_name.strip:
-                room_name = yield("You must provide a name for your new home.")
-            description = yield("(Optional) How would you describe %s? Add some flavour to your description." % (room_name))
-
-            new_room = create_room(caller, room_name, description=description)
-
-            caller.home = new_room
-            caller.msg("Welcome to your new home.")
-            caller.move_to(new_room)
-        elif home == caller.location:
+        if caller.home == caller.location:
             caller.msg("You are already home!")
         else:
-            caller.msg("There's no place like home ...")
-            caller.move_to(home)
+            caller.home = caller.location
+            caller.msg("%s is your new home." % caller.location)
 
 class CmdDescribe(default_cmds.MuxCommand):
     """
