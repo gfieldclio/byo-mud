@@ -159,6 +159,51 @@ class CmdDescribe(default_cmds.MuxCommand):
         if description:
             obj.db.desc = description
 
+class CmdTaste(default_cmds.MuxCommand):
+    """
+    Taste
+
+    Usage:
+        taste <obj>
+
+    Interact with an object to see what it tastes like.
+    """
+    key = "taste"
+    locks = "cmd:all()"
+    arg_regex = r"\s|$"
+
+    def func(self):
+        caller = self.caller
+
+        if not self.args:
+            caller.msg("If you don't taste something, how can you taste anything?")
+            return
+        else:
+            obj = caller.search(self.args, location=caller.location, quiet=True)
+            if not obj:
+                obj = caller.search(self.args, location=caller, quiet=True)
+
+        if type(obj) == list:
+            obj = obj[0]
+
+        current_description = obj.db.taste
+
+        if current_description:
+            caller.msg(current_description)
+            return
+
+        if not obj.access(caller, "taste"):
+            if obj.db.get_err_msg:
+                caller.msg(obj.db.get_err_msg)
+            else:
+                caller.msg("%s can't be tasted. Shame on you for trying." % obj)
+            return
+
+        description = yield("What happens when you try to taste %s? You can describe how it tastes, or what happens as a result of you trying to taste it. Once the description is set, it's permanent." % obj)
+        if description:
+            obj.db.taste = description
+
+
 class CmdExplore(default_cmds.MuxCommand):
     """
     Explore

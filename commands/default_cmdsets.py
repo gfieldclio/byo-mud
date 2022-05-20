@@ -15,10 +15,9 @@ own cmdsets by inheriting from them or directly from `evennia.CmdSet`.
 """
 
 from evennia import default_cmds
-from evennia.commands.default import account, admin, building, comms, general, help, system
+from evennia.commands.default import account, comms, system
 
-from commands.command import CmdDescribe, CmdExplore, CmdGet, CmdSetHome, CmdMap
-
+from commands.command import CmdDescribe, CmdExplore, CmdGet, CmdSetHome, CmdTaste, CmdMap
 
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
     """
@@ -38,6 +37,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdExplore)
         self.add(CmdGet)
         self.add(CmdSetHome)
+        self.add(CmdTaste)
         self.remove(system.CmdAbout())
         self.add(CmdMap)
 

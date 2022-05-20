@@ -6,6 +6,8 @@ class Item(DefaultObject):
     ):
         if access_type == "describe":
             return not self.db.desc
+        if access_type == "taste":
+            return not self.db.taste
 
         result = super().access(
             accessing_obj,
