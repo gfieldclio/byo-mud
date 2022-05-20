@@ -11,7 +11,7 @@ from evennia.utils import create, utils, search, logger
 from world.room_helpers import create_room
 
 from evennia import default_cmds
-
+from evennia.commands.default.building import CmdDig
 
 class Command(BaseCommand):
     """
@@ -138,9 +138,42 @@ class CmdExplore(default_cmds.MuxCommand):
 
         self.caller.msg("You move %s from %s into a new area." % (self.directions[explore_direction][0], self.caller.location))
 
-        new_room_name = yield("What is this place called?")
+        new_room_name = None
+        while not new_room_name:
+            new_room_name = yield("What is this place called?")
+            if new_room_name:
+                break
+            self.caller.msg("A name must be provided.")
 
-        self.caller.msg("%s added to map" % new_room_name)
+        new_room = create_room(self.caller, new_room_name)
+
+        exit_to_abbrev = explore_direction
+        exit_to_name = self.directions[explore_direction][0]
+        back_from_abbrev = self.directions[explore_direction][1]
+        back_from_name = self.directions[back_from_abbrev][0]
+
+        # Create exit to
+        exit_to = create.create_object(
+            settings.BASE_EXIT_TYPECLASS,
+            exit_to_name,
+            self.caller.location,
+            aliases = [exit_to_abbrev],
+            destination = new_room,
+            report_to = self.caller,
+        )
+
+        # Create exit back
+        exit_back = create.create_object(
+            settings.BASE_EXIT_TYPECLASS,
+            back_from_name,
+            new_room,
+            aliases = [back_from_abbrev],
+            destination = self.caller.location,
+            report_to = self.caller,
+        )
+
+        self.caller.msg("%s added to map" % new_room)
+        self.caller.move_to(new_room)
 
 # -------------------------------------------------------------
 #
