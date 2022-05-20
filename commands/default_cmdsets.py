@@ -15,6 +15,8 @@ own cmdsets by inheriting from them or directly from `evennia.CmdSet`.
 """
 
 from evennia import default_cmds
+from evennia.commands.default import account, admin, building, comms, general, help, system
+
 from commands.command import CmdDescribe, CmdExplore, CmdGet, CmdSetHome
 
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
@@ -35,10 +37,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(CmdExplore)
         self.add(CmdGet)
         self.add(CmdSetHome)
-        #
-        # any commands you add below will overload the default ones.
-        #
-
+        self.remove(system.CmdAbout())
 
 class AccountCmdSet(default_cmds.AccountCmdSet):
     """
@@ -55,9 +54,25 @@ class AccountCmdSet(default_cmds.AccountCmdSet):
         Populates the cmdset
         """
         super().at_cmdset_creation()
-        #
-        # any commands you add below will overload the default ones.
-        #
+        self.remove(account.CmdCharCreate())
+        self.remove(account.CmdCharDelete())
+        self.remove(account.CmdIC())
+        self.remove(comms.CmdAddCom())
+        self.remove(comms.CmdDelCom())
+        self.remove(comms.CmdAllCom())
+        self.remove(comms.CmdChannels())
+        self.remove(comms.CmdCdestroy())
+        self.remove(comms.CmdChannelCreate())
+        self.remove(comms.CmdClock())
+        self.remove(comms.CmdCBoot())
+        self.remove(comms.CmdCemit())
+        self.remove(comms.CmdCWho())
+        self.remove(comms.CmdCdesc())
+        self.remove(comms.CmdPage())
+        self.remove(comms.CmdIRC2Chan())
+        self.remove(comms.CmdIRCStatus())
+        self.remove(comms.CmdRSS2Chan())
+        self.remove(comms.CmdGrapevine2Chan())
 
 
 class UnloggedinCmdSet(default_cmds.UnloggedinCmdSet):
@@ -73,9 +88,6 @@ class UnloggedinCmdSet(default_cmds.UnloggedinCmdSet):
         Populates the cmdset
         """
         super().at_cmdset_creation()
-        #
-        # any commands you add below will overload the default ones.
-        #
 
 
 class SessionCmdSet(default_cmds.SessionCmdSet):
@@ -95,6 +107,4 @@ class SessionCmdSet(default_cmds.SessionCmdSet):
         It prints some info.
         """
         super().at_cmdset_creation()
-        #
-        # any commands you add below will overload the default ones.
-        #
+        self.remove(account.CmdSessions())
